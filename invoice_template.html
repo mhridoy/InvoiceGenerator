@@ -63,7 +63,7 @@
 </head>
 <body>
   <!-- Invoice Number as the Main Heading -->
-  <div class="invoice-header">{{ invoice_number }}</div>
+  <div class="invoice-header">Invoice No: {{ invoice_number }}</div>
 
   <div class="invoice-details">
     <p><strong>Company:</strong><br>{{ company_info | replace("\n", "<br>") | safe }}</p>
@@ -85,7 +85,8 @@
     </tr>
     {% for item in items %}
     <tr>
-      <td>{{ item.desc }}</td>
+      <td>{
+        { item.desc }}</td>
       {% if lme_used %}
       <td>
         {% if item.lme_applied %}
