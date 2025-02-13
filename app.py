@@ -145,15 +145,18 @@ for i in range(num_items):
             lme_percentage = st.slider("LME Percentage (40.00% - 100.00%)", min_value=40.00, max_value=100.00, value=100.00, step=0.01, format="%.2f", key=f"lme_percentage_{i}")
             final_rate = provision_lme_value * (lme_percentage / 100.0)
         else:
+            provision_lme_value = None  # Default value when LME is not enabled
+            lme_percentage = None  # Default value when LME is not enabled
             final_rate = st.number_input(f"Base Rate (USD) {i+1}", value=8380.00, step=0.01, key=f"base_rate_{i}")
-            
+        
+        # Append the item to the list
         items.append({
             "desc": desc,
             "qty": qty,
             "rate": final_rate,
             "lme_applied": lme_toggle,
-            "lme_percentage": lme_percentage if lme_toggle else None,
-            "provision_lme_value": provision_lme_value if lme_toggle else None
+            "lme_percentage": lme_percentage,
+            "provision_lme_value": provision_lme_value
         })
 
 # --- Generate and Download PDF ---
