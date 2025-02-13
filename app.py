@@ -58,18 +58,17 @@ st.title("Invoice Generator")
 st.subheader("Select Company Info from Google Sheets")
 company_data = get_company_data()
 
-# Check if the company data was fetched successfully
 if company_data is not None:
-    # Display the DataFrame for verification purposes
+    # Display the DataFrame for verification purposes (optional)
     st.dataframe(company_data)
     
     if "Company name" in company_data.columns and "Company Address" in company_data.columns:
         # Create a list of company names from the fetched data
         companies = company_data["Company name"].tolist()
-        # Use a radio button for the selection; you can change to st.selectbox if preferred.
-        selected_company = st.radio("Select a company", options=companies, key="company_radio")
+        # Use a selectbox for selection instead of radio buttons
+        selected_company = st.selectbox("Select a Company", options=companies, key="company_selectbox")
         
-        # Extract the corresponding company address
+        # Retrieve the corresponding company address
         try:
             company_address = company_data.loc[
                 company_data["Company name"] == selected_company, "Company Address"
@@ -77,16 +76,14 @@ if company_data is not None:
         except IndexError:
             company_address = ""
         
-        # Allow the user to edit the company name and address separately
-        company_name_input = st.text_input("Company Name", value=selected_company, key="company_name")
-        company_address_input = st.text_area("Company Address", value=company_address, key="company_address")
-        company_info_default = f"{company_name_input}\n{company_address_input}"
+        # Combine company name and address into one string for the info box
+        company_info_default = f"{selected_company}\n{company_address}"
     else:
         company_info_default = "Enter company info manually."
 else:
     company_info_default = "Enter company info manually."
 
-# Let the user edit the combined company info if needed
+# Allow the user to view and edit the combined company info
 company_info = st.text_area("Company Info", value=company_info_default, key="company_info_text")
 
 # --- Other Invoice Inputs ---
