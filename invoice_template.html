@@ -62,7 +62,7 @@
 </head>
 <body>
   <!-- Invoice Number as the Main Heading -->
-  <div class="invoice-header">{{ invoice_number }}</div>
+  <div class="invoice-header"> Invoice No: {{ invoice_number }}</div>
 
   <div class="invoice-details">
     <p><strong>Company:</strong><br>{{ company_info | replace('\n', '<br>') | safe }}</p>
