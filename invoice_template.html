@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Invoice</title>
   <style>
-    /* Minimal, professional, black-and-white design */
+    /* Minimal, professional black-and-white design */
     body {
       font-family: Arial, sans-serif;
       margin: 40px;
-      background-color: #fff;
       color: #000;
+      background-color: #fff;
       font-size: 14px;
     }
     .invoice-header {
@@ -33,7 +32,7 @@
       margin: 5px 0;
       line-height: 1.4;
     }
-    .date-sar {
+    .date-info {
       margin-bottom: 20px;
     }
     table {
@@ -65,10 +64,10 @@
   </style>
 </head>
 <body>
-  <!-- Invoice Number as Main Heading -->
+  <!-- Invoice Header -->
   <div class="invoice-header">{{ invoice_number }}</div>
-
-  <!-- Company and Customer Ref shown as two columns -->
+  
+  <!-- Company Info and Customer Reference (displayed side by side) -->
   <div class="invoice-details">
     <div class="column">
       <p><strong>Company:</strong><br>{{ company_info | replace("\n", "<br>") | safe }}</p>
@@ -77,13 +76,13 @@
       <p><strong>Customer Ref:</strong><br>{{ customer_ref | replace("\n", "<br>") | safe }}</p>
     </div>
   </div>
-
+  
   <!-- Date and SAR Rate -->
-  <div class="date-sar">
+  <div class="date-info">
     <p><strong>Date:</strong> {{ invoice_date }}</p>
     <p><strong>SAR Rate:</strong> {{ sar_rate }}</p>
   </div>
-
+  
   <!-- Invoice Items Table -->
   <table>
     <tr>
@@ -116,12 +115,12 @@
       <td>{{ "%.2f"|format(total_sar) }}</td>
     </tr>
   </table>
-
+  
   <!-- Amount in Words -->
   <div class="amount-words">
     <p><strong>Total Amount (in words):</strong> {{ total_usd_words }}</p>
   </div>
-
+  
   <!-- Bank Details -->
   <div class="bank-details">
     <p><strong>Bank Details:</strong><br>{{ bank_details | replace("\n", "<br>") | safe }}</p>
