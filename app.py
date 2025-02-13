@@ -6,24 +6,27 @@ from weasyprint import HTML
 
 def get_company_data():
     """
-    Fetches company data from a public Google Sheet.
-    The sheet is identified by sheet_id and sheet_name.
+    Fetch company data from a public Google Sheet.
+    The sheet is identified by its sheet_id and sheet_name.
+    The URL returns CSV data which is read by pandas.
     """
     sheet_id = "1MyF5yRHgvu1JqqJljTQSo6GDhvpPcezU_aSrXYd90aM"
     sheet_name = "sheet"
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
     df = pd.read_csv(url, dtype=str).fillna("")
+    # Remove any extra spaces around column names for easier access
+    df.columns = df.columns.str.strip()
     return df
 
 def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_date, sar_rate, bank_details, items):
     """
-    Renders the invoice HTML template and generates a PDF using WeasyPrint.
+    Render the invoice HTML template and generate a PDF using WeasyPrint.
     """
     try:
         with open("invoice_template.html", "r") as file:
             template_content = file.read()
     except FileNotFoundError:
-        st.error("Error: invoice_template.html not found. Please put the template file in the same directory.")
+        st.error("Error: invoice_template.html not found. Please ensure it is in the same directory as app.py.")
         return None
 
     template = Template(template_content)
@@ -50,19 +53,20 @@ st.title("Invoice Generator")
 
 st.subheader("Select Company Info from Google Sheets")
 company_data = get_company_data()
-if company_data is not None and "Company Name" in company_data.columns and "Address" in company_data.columns:
-    # Create a list of available company names from the sheet
-    company_names = company_data["Company Name"].tolist()
+if company_data is not None and "Company name" in company_data.columns and "Company Address" in company_data.columns:
+    # Get a list of company names and let the user choose one.
+    company_names = company_data["Company name"].tolist()
     selected_company = st.selectbox("Select a company", company_names)
-    # Retrieve the corresponding address
-    company_address = company_data[company_data["Company Name"] == selected_company]["Address"].iloc[0]
+    # Retrieve the corresponding address.
+    company_address = company_data[company_data["Company name"] == selected_company]["Company Address"].iloc[0]
     company_info_default = f"{selected_company}\n{company_address}"
 else:
     company_info_default = "Enter company info manually."
 
-# Editable Company Info field
+# Editable Company Info input field.
 company_info = st.text_area("Company Info", company_info_default)
 
+# Other invoice details.
 customer_ref = st.text_area("Customer Reference", """AGFZE/CU/TAT/---/2025
 CNTR: 1ST
 CONTAINER NO: YMLU3386328""")
