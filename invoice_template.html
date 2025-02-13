@@ -5,34 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Invoice</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-    .invoice-header { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
-    .invoice-details, .bank-details { margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid black; padding: 8px; text-align: left; }
-    .total { font-weight: bold; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 40px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    .invoice-header {
+      text-align: center;
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #2a7ae2;
+    }
+    .invoice-details {
+      margin-bottom: 20px;
+      padding: 10px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .invoice-details p {
+      margin: 5px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #2a7ae2;
+      color: #fff;
+    }
+    .total {
+      font-weight: bold;
+      background-color: #f0f0f0;
+    }
+    .amount-words {
+      font-style: italic;
+      margin-top: 10px;
+    }
+    .bank-details {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #e6f2ff;
+      border: 1px solid #b3d1ff;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
-  <div class="invoice-header">Invoice</div>
+  <!-- Invoice Number as the Main Heading -->
+  <div class="invoice-header">{{ invoice_number }}</div>
 
   <div class="invoice-details">
-    <p><strong>Company:</strong> {{ company_info }}</p>
+    <p><strong>Company:</strong><br>{{ company_info | replace('\n', '<br>') | safe }}</p>
     <p><strong>Customer Ref:</strong> {{ customer_ref }}</p>
-    <p><strong>Invoice No:</strong> {{ invoice_number }}</p>
     <p><strong>Date:</strong> {{ invoice_date }}</p>
     <p><strong>SAR Rate:</strong> {{ sar_rate }}</p>
-  </div>
-
-  <div class="bank-details">
-    <p><strong>Bank Details:</strong><br>{{ bank_details }}</p>
   </div>
 
   <table>
     <tr>
       <th>Description</th>
       <th>Quantity</th>
-      <th>Rate (USD)</th>
+      <th>Base Rate (USD)</th>
+      <th>LME</th>
       <th>Total (USD)</th>
       <th>Total (SAR)</th>
     </tr>
@@ -40,16 +84,31 @@
     <tr>
       <td>{{ item.desc }}</td>
       <td>{{ item.qty }}</td>
-      <td>{{ item.rate }}</td>
-      <td>{{ item.qty * item.rate }}</td>
-      <td>{{ item.qty * item.rate * sar_rate }}</td>
+      <td>{{ "%.2f"|format(item.base_rate) }}</td>
+      <td>
+        {% if item.lme_applied %}
+          Yes ({{ "%.2f"|format(item.lme_percentage) }}%)
+        {% else %}
+          No
+        {% endif %}
+      </td>
+      <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
+      <td>{{ "%.2f"|format(item.qty * item.rate * sar_rate) }}</td>
     </tr>
     {% endfor %}
     <tr class="total">
-      <td colspan="3">Grand Total</td>
-      <td>{{ total_usd }}</td>
-      <td>{{ total_sar }}</td>
+      <td colspan="4">Grand Total</td>
+      <td>{{ "%.2f"|format(total_usd) }}</td>
+      <td>{{ "%.2f"|format(total_sar) }}</td>
     </tr>
   </table>
+
+  <div class="amount-words">
+    <p><strong>Total Amount (in words):</strong> {{ total_usd_words }}</p>
+  </div>
+
+  <div class="bank-details">
+    <p><strong>Bank Details:</strong><br>{{ bank_details | replace('\n', '<br>') | safe }}</p>
+  </div>
 </body>
 </html>
