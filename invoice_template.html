@@ -88,8 +88,11 @@
     <tr>
       <th>Description</th>
       {% if lme_used %}
-      <th>LME</th>
+      <th>LME Rate</th>
+      {% if provision_lme_value %}
+      <th>LME %</th>
       {% endif %}
+
       <th>Quantity</th>
       <th>Rate (USD)</th>
       <th>Total (USD)</th>
