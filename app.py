@@ -7,7 +7,7 @@ from weasyprint import HTML
 def get_company_data():
     """
     Fetch company data from a public Google Sheet using the CSV export URL.
-    The Google Sheet should have two columns: "Company name" and "Company Address".
+    The Google Sheet should have two columns: "Company Name" and "Company Address".
     """
     # Replace with your actual sheet ID and sheet name
     sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"
@@ -62,34 +62,34 @@ company_data = get_company_data()
 
 if company_data is not None:
     st.write("Fetched Company Data:")
-    st.dataframe(company_data)  # Debug: Display fetched data
+    st.dataframe(company_data)  # Debug/verification
 
     # Check if the required columns exist in the DataFrame
-    if "Company name" in company_data.columns and "Company Address" in company_data.columns:
+    if "Company Name" in company_data.columns and "Company Address" in company_data.columns:
         # Create a list of companies from the DataFrame
-        companies = company_data["Company name"].tolist()
-        st.write("Companies List:", companies)  # Debug: Check companies list
+        companies = company_data["Company Name"].tolist()
+        st.write("Companies List:", companies)  # Debug/verification
 
-        # Check if the companies list is not empty
         if companies:
             # Use a selectbox for the user to select a company
             selected_company = st.selectbox("Select a Company", options=companies, key="company_selectbox")
-            st.write("Selected Company:", selected_company)  # Debug: Display selected company
+            st.write("Selected Company:", selected_company)  # Debug/verification
 
             # Retrieve the corresponding company address
             try:
                 company_address = company_data.loc[
-                    company_data["Company name"] == selected_company, "Company Address"
+                    company_data["Company Name"] == selected_company, "Company Address"
                 ].iloc[0]
             except IndexError:
                 company_address = ""
+            
             # Combine the company name and address for display in the text area
             company_info_default = f"{selected_company}\n{company_address}"
         else:
             st.error("No companies available in the list. Please check your Google Sheet data.")
             company_info_default = "Enter company info manually."
     else:
-        st.error("The expected columns ('Company name' and 'Company Address') were not found in the data.")
+        st.error("The expected columns ('Company Name' and 'Company Address') were not found in the data.")
         company_info_default = "Enter company info manually."
 else:
     company_info_default = "Enter company info manually."
@@ -99,7 +99,7 @@ company_info = st.text_area("Company Info", value=company_info_default, key="com
 
 # --- Other Invoice Inputs ---
 customer_ref = st.text_area("Customer Reference", 
-                              "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328")
+    "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328")
 invoice_number = st.text_input("Invoice Number", "30250124")
 invoice_date = st.date_input("Invoice Date", date.today())
 sar_rate = st.number_input("Dollar to SAR Rate", value=3.7475, step=0.0001)
@@ -115,17 +115,52 @@ SWIFT CODE:RIBLSARI""")
 st.subheader("Items")
 items = []
 num_items = st.number_input("Number of items", min_value=1, value=1, step=1, key="num_items")
+
 for i in range(num_items):
     with st.expander(f"Item {i+1}"):
         desc = st.text_input(f"Description {i+1}", "Cu Birch Cliff Scrap", key=f"desc_{i}")
         qty = st.number_input(f"Quantity {i+1}", value=19.332, step=0.001, key=f"qty_{i}")
-        rate = st.number_input(f"Rate (USD) {i+1}", value=8380.00, step=0.01, key=f"rate_{i}")
-        items.append({"desc": desc, "qty": qty, "rate": rate})
+        
+        # Base Rate (USD) for the item
+        base_rate = st.number_input(f"Rate (USD) {i+1}", value=8380.00, step=0.01, key=f"rate_{i}")
+        
+        # LME Toggle
+        lme_toggle = st.checkbox("Enable LME for this item?", key=f"lme_toggle_{i}")
+        
+        # Default LME multiplier is 100% (1.0) if not enabled
+        lme_multiplier = 1.0
+        if lme_toggle:
+            # Let the user select a percentage between 40 and 100
+            lme_percentage = st.slider(
+                "LME Percentage (40% - 100%)",
+                min_value=40, 
+                max_value=100, 
+                value=100, 
+                step=1,
+                key=f"lme_percentage_{i}"
+            )
+            lme_multiplier = lme_percentage / 100.0
+        
+        # Final rate is the base rate multiplied by the LME factor
+        final_rate = base_rate * lme_multiplier
+        
+        items.append({
+            "desc": desc,
+            "qty": qty,
+            # We'll store the final adjusted rate in 'rate' so the invoice uses it
+            "rate": final_rate
+        })
 
 # --- Generate and Download PDF ---
 if st.button("Generate Invoice PDF"):
     pdf_file_path = generate_invoice_pdf(
-        company_info, customer_ref, invoice_number, invoice_date, sar_rate, bank_details, items
+        company_info, 
+        customer_ref, 
+        invoice_number, 
+        invoice_date, 
+        sar_rate, 
+        bank_details, 
+        items
     )
     if pdf_file_path:
         with open(pdf_file_path, "rb") as f:
