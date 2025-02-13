@@ -7,15 +7,14 @@ from weasyprint import HTML
 def get_company_data():
     """
     Fetch company data from a public Google Sheet using the CSV export URL.
-    The sheet must have two columns: "Company name" and "Company Address".
+    The Google Sheet should have two columns: "Company name" and "Company Address".
     """
     sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"  # Your sheet ID
-    sheet_name = "Sheet1"  # Change if your sheet name is different
+    sheet_name = "Sheet1"  # Adjust if your sheet name is different
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
     try:
         df = pd.read_csv(url, dtype=str).fillna("")
-        # Remove any extra spaces in column names
-        df.columns = df.columns.str.strip()
+        df.columns = df.columns.str.strip()  # Clean up any extra spaces in column headers
         return df
     except Exception as e:
         st.error(f"Error fetching company data: {e}")
