@@ -1,1 +1,56 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    .invoice-header { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+    .invoice-details, .bank-details { margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid black; padding: 8px; text-align: left; }
+    .total { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="invoice-header">Invoice</div>
+
+  <div class="invoice-details">
+    <p><strong>Company:</strong> {{ company_info }}</p>
+    <p><strong>Customer Ref:</strong> {{ customer_ref }}</p>
+    <p><strong>Invoice No:</strong> {{ invoice_number }}</p>
+    <p><strong>Date:</strong> {{ invoice_date }}</p>
+    <p><strong>SAR Rate:</strong> {{ sar_rate }}</p>
+  </div>
+
+  <div class="bank-details">
+    <p><strong>Bank Details:</strong><br>{{ bank_details }}</p>
+  </div>
+
+  <table>
+    <tr>
+      <th>Description</th>
+      <th>Quantity</th>
+      <th>Rate (USD)</th>
+      <th>Total (USD)</th>
+      <th>Total (SAR)</th>
+    </tr>
+    {% for item in items %}
+    <tr>
+      <td>{{ item.desc }}</td>
+      <td>{{ item.qty }}</td>
+      <td>{{ item.rate }}</td>
+      <td>{{ item.qty * item.rate }}</td>
+      <td>{{ item.qty * item.rate * sar_rate }}</td>
+    </tr>
+    {% endfor %}
+    <tr class="total">
+      <td colspan="3">Grand Total</td>
+      <td>{{ total_usd }}</td>
+      <td>{{ total_sar }}</td>
+    </tr>
+  </table>
+</body>
+</html>
