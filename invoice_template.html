@@ -108,7 +108,7 @@
       </td>
       {% endif %}
       <td>{{ item.qty }}</td>
-      <td>{{ "%.2f"|format(item.base_rate) }}</td>
+      <td>{{ "%.2f"|format(item.rate) }}</td>
       <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
       <td>{{ "%.2f"|format(item.qty * item.rate * sar_rate) }}</td>
     </tr>
