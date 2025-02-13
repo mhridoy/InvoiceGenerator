@@ -141,7 +141,7 @@ for i in range(num_items):
         lme_toggle = st.checkbox("Enable LME for this item?", key=f"lme_toggle_{i}")
         if lme_toggle:
             # Input for the provision LME value (this value will be used in the calculation)
-            provision_lme_value = st.number_input("Provision LME Value", value=base_rate, step=0.01, key=f"provision_lme_value_{i}")
+            provision_lme_value = st.number_input("Provision LME Value", value=0.00, step=0.01, key=f"provision_lme_value_{i}")
             lme_percentage = st.slider("LME Percentage (40.00% - 100.00%)", min_value=40.00, max_value=100.00, value=100.00, step=0.01, format="%.2f", key=f"lme_percentage_{i}")
             final_rate = provision_lme_value * (lme_percentage / 100.0)
             base_rate = final_rate
