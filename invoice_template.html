@@ -85,47 +85,52 @@
   
   <!-- Invoice Items Table -->
   <table>
-    <tr>
-      <th>Description</th>
-      {% if lme_used %}
-      <th>LME Rate</th>
-      {% if provision_lme_value %}
-      <th>LME %</th>
-      {% endif %}
-
-      <th>Quantity</th>
-      <th>Rate (USD)</th>
-      <th>Total (USD)</th>
-      <th>Total (SAR)</th>
-    </tr>
-    {% for item in items %}
-    <tr>
-      <td>{{ item.desc }}</td>
-      {% if lme_used %}
-      <td>
-        {% if item.lme_applied %}
-          {{ "%.2f"|format(item.lme_percentage) }}%
-        {% else %}
-          N/A
-        {% endif %}
-      </td>
-      {% endif %}
-      <td>{{ item.qty }}</td>
-      <td>{{ "%.2f"|format(item.rate) }}</td>
-      <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
-      <td>{{ "%.2f"|format(item.qty * item.rate * sar_rate) }}</td>
-    </tr>
-    {% endfor %}
-    <tr class="total">
-      {% if lme_used %}
-      <td colspan="4" style="text-align:right;">Grand Total</td>
+  <tr>
+    <th>Description</th>
+    {% if lme_used %}
+    <th>LME Rate</th>
+    <th>LME %</th>
+    {% endif %}
+    <th>Quantity</th>
+    <th>Rate (USD)</th>
+    <th>Total (USD)</th>
+    <th>Total (SAR)</th>
+  </tr>
+  {% for item in items %}
+  <tr>
+    <td>{{ item.desc }}</td>
+    {% if lme_used %}
+    <td>
+      {% if item.lme_applied %}
+        {{ "%.2f"|format(item.provision_lme_value) }}
       {% else %}
-      <td colspan="3" style="text-align:right;">Grand Total</td>
+        N/A
       {% endif %}
-      <td>{{ "%.2f"|format(total_usd) }}</td>
-      <td>{{ "%.2f"|format(total_sar) }}</td>
-    </tr>
-  </table>
+    </td>
+    <td>
+      {% if item.lme_applied %}
+        {{ "%.2f"|format(item.lme_percentage) }}%
+      {% else %}
+        N/A
+      {% endif %}
+    </td>
+    {% endif %}
+    <td>{{ item.qty }}</td>
+    <td>{{ "%.2f"|format(item.rate) }}</td>
+    <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
+    <td>{{ "%.2f"|format(item.qty * item.rate * sar_rate) }}</td>
+  </tr>
+  {% endfor %}
+  <tr class="total">
+    {% if lme_used %}
+    <td colspan="5" style="text-align:right;">Grand Total</td>
+    {% else %}
+    <td colspan="4" style="text-align:right;">Grand Total</td>
+    {% endif %}
+    <td>{{ "%.2f"|format(total_usd) }}</td>
+    <td>{{ "%.2f"|format(total_sar) }}</td>
+  </tr>
+</table>
   
   <!-- Total Amount in Words -->
   <div class="amount-words">
