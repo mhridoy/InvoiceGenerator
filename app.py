@@ -11,9 +11,8 @@ def get_company_data():
     Fetch company data from a public Google Sheet using the CSV export URL.
     The Google Sheet should have two columns: "Company Name" and "Company Address".
     """
-    # Replace with your own Google Sheet ID and sheet name if needed.
-    sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"
-    sheet_name = "Sheet1"
+    sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"  # Your sheet ID
+    sheet_name = "Sheet1"  # Adjust if needed
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&sheet={sheet_name}"
     try:
         df = pd.read_csv(url, dtype=str).fillna("")
@@ -25,22 +24,26 @@ def get_company_data():
 
 def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_date, sar_rate, bank_details, items):
     """
-    Renders the invoice HTML template (loaded from invoice_template.html) with the provided data,
-    then generates a PDF using WeasyPrint. The USD total is also converted to words.
+    Render the invoice HTML template (read from an external file) and generate a PDF using WeasyPrint.
+    Also converts the USD total into words.
     """
+    # Calculate totals
     total_usd = sum(item['qty'] * item['rate'] for item in items)
     total_sar = sum(item['qty'] * item['rate'] * sar_rate for item in items)
     total_usd_words = num2words(total_usd, to='currency', lang='en')
     
-    # Load the external HTML template
+    # Determine whether any item has LME enabled
+    lme_used = any(item.get("lme_applied", False) for item in items)
+    
+    # Read external HTML template file
     template_path = "invoice_template.html"
     if not os.path.exists(template_path):
-        st.error("Missing invoice_template.html file. Make sure it is in the same directory as app.py.")
+        st.error("Missing file: invoice_template.html. Please ensure it is in the same directory as app.py.")
         return None
+
     with open(template_path, "r", encoding="utf-8") as file:
         invoice_template = file.read()
     
-    # Render the template with our dynamic data
     template = Template(invoice_template)
     rendered_html = template.render(
         company_info=company_info,
@@ -52,7 +55,8 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
         items=items,
         total_usd=total_usd,
         total_sar=total_sar,
-        total_usd_words=total_usd_words
+        total_usd_words=total_usd_words,
+        lme_used=lme_used
     )
 
     pdf_file_path = "invoice.pdf"
@@ -78,7 +82,7 @@ if company_data is not None:
                 ].iloc[0]
             except IndexError:
                 company_address = ""
-            # Use a newline between company name and address
+            # Show company name and address on separate lines
             company_info_default = f"{selected_company}\n{company_address}"
         else:
             st.error("No companies available. Check your Google Sheet data.")
@@ -113,16 +117,14 @@ for i in range(num_items):
     with st.expander(f"Item {i+1}"):
         desc = st.text_input(f"Description {i+1}", "Cu Birch Cliff Scrap", key=f"desc_{i}")
         qty = st.number_input(f"Quantity {i+1}", value=19.332, step=0.001, key=f"qty_{i}")
-        base_rate = st.number_input(f"Base Rate (USD) {i+1}", value=8380.00, step=0.01, key=f"rate_{i}")
+        base_rate = st.number_input(f"Rate (USD) {i+1}", value=8380.00, step=0.01, key=f"rate_{i}")
         
-        # LME Toggle – if enabled, get the LME percentage to adjust the base rate
+        # LME Toggle and associated slider
         lme_toggle = st.checkbox("Enable LME for this item?", key=f"lme_toggle_{i}")
-        lme_applied = False
-        lme_percentage_val = None
-        multiplier = 1.0
+        lme_multiplier = 1.0
+        lme_percentage = None
         if lme_toggle:
-            lme_applied = True
-            lme_percentage_val = st.slider(
+            lme_percentage = st.slider(
                 "LME Percentage (40.00% - 100.00%)",
                 min_value=40.00, 
                 max_value=100.00, 
@@ -131,18 +133,18 @@ for i in range(num_items):
                 format="%.2f",
                 key=f"lme_percentage_{i}"
             )
-            multiplier = lme_percentage_val / 100.0
+            lme_multiplier = lme_percentage / 100.0
         
-        final_rate = base_rate * multiplier
+        final_rate = base_rate * lme_multiplier
         
-        # Store both the original base rate (for display) and final rate (for calculations)
+        # Store item details (base_rate preserved for display)
         items.append({
             "desc": desc,
             "qty": qty,
             "base_rate": base_rate,
             "rate": final_rate,
-            "lme_applied": lme_applied,
-            "lme_percentage": lme_percentage_val
+            "lme_applied": lme_toggle,
+            "lme_percentage": lme_percentage
         })
 
 # --- Generate and Download PDF ---
@@ -156,6 +158,6 @@ if st.button("Generate Invoice PDF"):
         bank_details, 
         items
     )
-    if pdf_file_path:
+    if pdf_file_path and os.path.exists(pdf_file_path):
         with open(pdf_file_path, "rb") as f:
             st.download_button("Download Invoice", data=f.read(), file_name="invoice.pdf", mime="application/pdf")
