@@ -80,7 +80,7 @@
   <!-- Date and SAR Rate -->
   <div class="date-info">
     <p><strong>Date:</strong> {{ invoice_date }}</p>
-    <p><strong>SAR Rate:</strong> {{ sar_rate }}</p>
+    <p><strong>SAR Rate:</strong> {{ sar_rate }} ($1 equivalent)</p>
   </div>
   
   <!-- Invoice Items Table -->
@@ -88,7 +88,7 @@
   <tr>
     <th>Description</th>
     {% if lme_used %}
-    <th>LME Rate</th>
+    <th>Provision LME </th>
     <th>LME %</th>
     {% endif %}
     <th>Quantity</th>
@@ -134,7 +134,7 @@
   
   <!-- Total Amount in Words -->
   <div class="amount-words">
-    <p><strong>Total Amount (in words):</strong> {{ total_usd_words }}</p>
+    <p><strong>Total USD Amount (in words):</strong> {{ total_usd_words }}</p>
   </div>
   
   <!-- Bank Details (line by line) -->
