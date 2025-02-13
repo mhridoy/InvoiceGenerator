@@ -1,3 +1,5 @@
 streamlit
 Jinja2
 WeasyPrint
+num2words
+pandas
