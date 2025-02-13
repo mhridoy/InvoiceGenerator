@@ -11,7 +11,7 @@ def get_company_data():
     """
     # Replace with your actual sheet ID and sheet name
     sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"
-    sheet_name = "Sheet1"  
+    sheet_name = "Sheet1"
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&sheet={sheet_name}"
     try:
         df = pd.read_csv(url, dtype=str).fillna("")
@@ -66,12 +66,10 @@ if company_data is not None:
 
     # Check if the required columns exist in the DataFrame
     if "Company Name" in company_data.columns and "Company Address" in company_data.columns:
-        # Create a list of companies from the DataFrame
         companies = company_data["Company Name"].tolist()
         st.write("Companies List:", companies)  # Debug/verification
 
         if companies:
-            # Use a selectbox for the user to select a company
             selected_company = st.selectbox("Select a Company", options=companies, key="company_selectbox")
             st.write("Selected Company:", selected_company)  # Debug/verification
 
@@ -130,13 +128,14 @@ for i in range(num_items):
         # Default LME multiplier is 100% (1.0) if not enabled
         lme_multiplier = 1.0
         if lme_toggle:
-            # Let the user select a percentage between 40 and 100
+            # Let the user select a fractional percentage between 40.0 and 100.0
             lme_percentage = st.slider(
                 "LME Percentage (40% - 100%)",
-                min_value=40, 
-                max_value=100, 
-                value=100, 
-                step=1,
+                min_value=40.0, 
+                max_value=100.0, 
+                value=100.0, 
+                step=0.1,  # step of 0.1 allows fractional input like 40.1%, 79.5%, etc.
+                format="%.1f",  # display one decimal place
                 key=f"lme_percentage_{i}"
             )
             lme_multiplier = lme_percentage / 100.0
@@ -147,7 +146,6 @@ for i in range(num_items):
         items.append({
             "desc": desc,
             "qty": qty,
-            # We'll store the final adjusted rate in 'rate' so the invoice uses it
             "rate": final_rate
         })
 
