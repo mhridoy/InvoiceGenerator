@@ -11,14 +11,10 @@ def get_company_data():
     """
     sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"  # Your sheet ID
     sheet_name = "Sheet1"  # Adjust if your sheet name is different
-    
-    # UPDATED URL: Sometimes using the "export?format=csv" format is more reliable.
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&sheet={sheet_name}"
-    
     try:
         df = pd.read_csv(url, dtype=str).fillna("")
-        # Strip whitespace from column names to ensure proper matching
-        df.columns = df.columns.str.strip()
+        df.columns = df.columns.str.strip()  # Remove extra spaces from headers
         return df
     except Exception as e:
         st.error(f"Error fetching company data: {e}")
@@ -36,8 +32,6 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
         return None
 
     template = Template(template_content)
-    
-    # Calculate totals
     total_usd = sum(item['qty'] * item['rate'] for item in items)
     total_sar = sum(item['qty'] * item['rate'] * sar_rate for item in items)
 
@@ -45,7 +39,7 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
         company_info=company_info,
         customer_ref=customer_ref,
         invoice_number=invoice_number,
-        invoice_date=invoice_date.strftime("%Y-%m-%d"),  # Format date as string
+        invoice_date=invoice_date.strftime("%Y-%m-%d"),  # Format date as a string
         sar_rate=sar_rate,
         bank_details=bank_details,
         items=items,
@@ -57,38 +51,47 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
     HTML(string=rendered_html).write_pdf(pdf_file_path)
     return pdf_file_path
 
-# --- Streamlit Interface ---
+# --- Streamlit Application ---
 
 st.title("Invoice Generator")
 
 st.subheader("Select Company Info from Google Sheets")
 company_data = get_company_data()
 
+# Check if the company data was fetched successfully
 if company_data is not None:
-    # Display the fetched dataframe in a more interactive way
+    # Display the DataFrame for verification purposes
     st.dataframe(company_data)
     
-    # Check for required columns after cleaning
     if "Company name" in company_data.columns and "Company Address" in company_data.columns:
+        # Create a list of company names from the fetched data
         companies = company_data["Company name"].tolist()
-        # Use radio buttons to select a company
+        # Use a radio button for the selection; you can change to st.selectbox if preferred.
         selected_company = st.radio("Select a company", options=companies, key="company_radio")
-        # Retrieve the corresponding company address safely
+        
+        # Extract the corresponding company address
         try:
-            company_address = company_data.loc[company_data["Company name"] == selected_company, "Company Address"].iloc[0]
+            company_address = company_data.loc[
+                company_data["Company name"] == selected_company, "Company Address"
+            ].iloc[0]
         except IndexError:
             company_address = ""
-        company_info_default = f"{selected_company}\n{company_address}"
+        
+        # Allow the user to edit the company name and address separately
+        company_name_input = st.text_input("Company Name", value=selected_company, key="company_name")
+        company_address_input = st.text_area("Company Address", value=company_address, key="company_address")
+        company_info_default = f"{company_name_input}\n{company_address_input}"
     else:
         company_info_default = "Enter company info manually."
 else:
     company_info_default = "Enter company info manually."
 
-# The key ensures that the text area gets updated appropriately when selection changes
+# Let the user edit the combined company info if needed
 company_info = st.text_area("Company Info", value=company_info_default, key="company_info_text")
 
+# --- Other Invoice Inputs ---
 customer_ref = st.text_area("Customer Reference", 
-                            "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328")
+                              "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328")
 invoice_number = st.text_input("Invoice Number", "30250124")
 invoice_date = st.date_input("Invoice Date", date.today())
 sar_rate = st.number_input("Dollar to SAR Rate", value=3.7475, step=0.0001)
@@ -100,10 +103,10 @@ IBAN NO:SA4920000003274336190440
 BIN KHALDOON ST. BRANCH
 SWIFT CODE:RIBLSARI""")
 
+# --- Invoice Items ---
 st.subheader("Items")
 items = []
 num_items = st.number_input("Number of items", min_value=1, value=1, step=1, key="num_items")
-
 for i in range(num_items):
     with st.expander(f"Item {i+1}"):
         desc = st.text_input(f"Description {i+1}", "Cu Birch Cliff Scrap", key=f"desc_{i}")
@@ -111,6 +114,7 @@ for i in range(num_items):
         rate = st.number_input(f"Rate (USD) {i+1}", value=8380.00, step=0.01, key=f"rate_{i}")
         items.append({"desc": desc, "qty": qty, "rate": rate})
 
+# --- Generate and Download PDF ---
 if st.button("Generate Invoice PDF"):
     pdf_file_path = generate_invoice_pdf(
         company_info, customer_ref, invoice_number, invoice_date, sar_rate, bank_details, items
