@@ -136,19 +136,15 @@ for i in range(num_items):
         desc = st.text_input(f"Description {i+1}", "Cu Birch Cliff Scrap", key=f"desc_{i}")
         qty = st.number_input(f"Quantity {i+1}", value=19.332, step=0.001, key=f"qty_{i}")
         
-        
         # LME toggle: if enabled, get Provision LME Value and LME Percentage.
         lme_toggle = st.checkbox("Enable LME for this item?", key=f"lme_toggle_{i}")
         if lme_toggle:
-            # Input for the provision LME value (this value will be used in the calculation)
             provision_lme_value = st.number_input("Provision LME Value", value=0.00, step=0.01, key=f"provision_lme_value_{i}")
             lme_percentage = st.slider("LME Percentage (40.00% - 100.00%)", min_value=40.00, max_value=100.00, value=100.00, step=0.01, format="%.2f", key=f"lme_percentage_{i}")
             final_rate = provision_lme_value * (lme_percentage / 100.0)
-            base_rate = final_rate
         else:
-            base_rate = st.number_input(f"Base Rate (USD) {i+1}", value=8380.00, step=0.01, key=f"base_rate_{i}")
+            final_rate = st.number_input(f"Base Rate (USD) {i+1}", value=8380.00, step=0.01, key=f"base_rate_{i}")
             
-        
         items.append({
             "desc": desc,
             "qty": qty,
