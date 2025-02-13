@@ -6,21 +6,22 @@ from weasyprint import HTML
 
 def get_company_data():
     """
-    Fetch company data from a public Google Sheet.
-    The sheet is identified by its sheet_id and sheet_name.
-    The URL returns CSV data which is read by pandas.
+    Fetch company data from a public Google Sheet using the CSV export URL.
     """
-    sheet_id = "1MyF5yRHgvu1JqqJljTQSo6GDhvpPcezU_aSrXYd90aM"
-    sheet_name = "sheet"
+    sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"  # Your sheet ID
+    sheet_name = "Sheet1"  # Change this if your sheet has a different name
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
-    df = pd.read_csv(url, dtype=str).fillna("")
-    # Remove any extra spaces around column names for easier access
-    df.columns = df.columns.str.strip()
-    return df
+    try:
+        df = pd.read_csv(url, dtype=str).fillna("")
+        df.columns = df.columns.str.strip()  # Remove extra whitespace from column names
+        return df
+    except Exception as e:
+        st.error(f"Error fetching data: {e}")
+        return None
 
 def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_date, sar_rate, bank_details, items):
     """
-    Render the invoice HTML template and generate a PDF using WeasyPrint.
+    Render the invoice using a Jinja2 HTML template and generate a PDF with WeasyPrint.
     """
     try:
         with open("invoice_template.html", "r") as file:
@@ -54,7 +55,7 @@ st.title("Invoice Generator")
 st.subheader("Select Company Info from Google Sheets")
 company_data = get_company_data()
 if company_data is not None and "Company name" in company_data.columns and "Company Address" in company_data.columns:
-    # Get a list of company names and let the user choose one.
+    # Create a list of company names from the sheet and let the user choose one.
     company_names = company_data["Company name"].tolist()
     selected_company = st.selectbox("Select a company", company_names)
     # Retrieve the corresponding address.
@@ -63,13 +64,9 @@ if company_data is not None and "Company name" in company_data.columns and "Comp
 else:
     company_info_default = "Enter company info manually."
 
-# Editable Company Info input field.
 company_info = st.text_area("Company Info", company_info_default)
 
-# Other invoice details.
-customer_ref = st.text_area("Customer Reference", """AGFZE/CU/TAT/---/2025
-CNTR: 1ST
-CONTAINER NO: YMLU3386328""")
+customer_ref = st.text_area("Customer Reference", "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328")
 invoice_number = st.text_input("Invoice Number", "30250124")
 invoice_date = st.date_input("Invoice Date", date.today())
 sar_rate = st.number_input("Dollar to SAR Rate", value=3.7475, step=0.0001)
