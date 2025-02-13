@@ -77,7 +77,9 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
         total_usd=total_usd,
         total_sar=total_sar,
         total_usd_words=total_usd_words,
-        lme_used=lme_used
+        lme_used=lme_used,
+        provision_lme_value=provision_lme_value
+        
     )
     
     pdf_file_path = "invoice.pdf"
