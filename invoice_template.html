@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <title>Invoice</title>
   <style>
-    /* Minimal, professional black-and-white design */
+    /* Minimal professional design (black and white) */
     body {
       font-family: Arial, sans-serif;
       margin: 40px;
-      color: #000;
       background-color: #fff;
+      color: #000;
       font-size: 14px;
     }
     .invoice-header {
@@ -21,19 +21,13 @@
       padding-bottom: 10px;
     }
     .invoice-details {
-      display: flex;
-      justify-content: space-between;
       margin-bottom: 20px;
-    }
-    .invoice-details .column {
-      width: 48%;
+      padding: 10px;
+      border: 1px solid #000;
     }
     .invoice-details p {
       margin: 5px 0;
       line-height: 1.4;
-    }
-    .date-info {
-      margin-bottom: 20px;
     }
     table {
       width: 100%;
@@ -53,8 +47,8 @@
       background-color: #eee;
     }
     .amount-words {
-      margin-top: 10px;
       font-style: italic;
+      margin-top: 10px;
     }
     .bank-details {
       margin-top: 20px;
@@ -66,28 +60,22 @@
 <body>
   <!-- Invoice Header -->
   <div class="invoice-header">{{ invoice_number }}</div>
-  
-  <!-- Company Info and Customer Reference (displayed side by side) -->
+
+  <!-- Company and Customer Reference -->
   <div class="invoice-details">
-    <div class="column">
-      <p><strong>Company:</strong><br>{{ company_info | replace("\n", "<br>") | safe }}</p>
-    </div>
-    <div class="column">
-      <p><strong>Customer Ref:</strong><br>{{ customer_ref | replace("\n", "<br>") | safe }}</p>
-    </div>
-  </div>
-  
-  <!-- Date and SAR Rate -->
-  <div class="date-info">
+    <p><strong>Company:</strong><br>{{ company_info | replace("\n", "<br>") | safe }}</p>
+    <p><strong>Customer Ref:</strong><br>{{ customer_ref | replace("\n", "<br>") | safe }}</p>
     <p><strong>Date:</strong> {{ invoice_date }}</p>
     <p><strong>SAR Rate:</strong> {{ sar_rate }}</p>
   </div>
-  
-  <!-- Invoice Items Table -->
+
+  <!-- Items Table with conditional LME column -->
   <table>
     <tr>
       <th>Description</th>
+      {% if lme_used %}
       <th>LME</th>
+      {% endif %}
       <th>Rate (USD)</th>
       <th>Quantity</th>
       <th>Total (USD)</th>
@@ -96,13 +84,13 @@
     {% for item in items %}
     <tr>
       <td>{{ item.desc }}</td>
+      {% if lme_used %}
       <td>
         {% if item.lme_applied %}
           {{ "%.2f"|format(item.lme_percentage) }}%
-        {% else %}
-          N/A
         {% endif %}
       </td>
+      {% endif %}
       <td>{{ "%.2f"|format(item.base_rate) }}</td>
       <td>{{ item.qty }}</td>
       <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
@@ -110,20 +98,24 @@
     </tr>
     {% endfor %}
     <tr class="total">
+      {% if lme_used %}
       <td colspan="4" style="text-align:right;">Grand Total</td>
+      {% else %}
+      <td colspan="3" style="text-align:right;">Grand Total</td>
+      {% endif %}
       <td>{{ "%.2f"|format(total_usd) }}</td>
       <td>{{ "%.2f"|format(total_sar) }}</td>
     </tr>
   </table>
-  
-  <!-- Amount in Words -->
+
+  <!-- Total Amount in Words -->
   <div class="amount-words">
     <p><strong>Total Amount (in words):</strong> {{ total_usd_words }}</p>
   </div>
-  
-  <!-- Bank Details -->
+
+  <!-- Bank Details (with each heading bold as processed in app.py) -->
   <div class="bank-details">
-    <p><strong>Bank Details:</strong><br>{{ bank_details | replace("\n", "<br>") | safe }}</p>
+    <p>{{ bank_details | safe }}</p>
   </div>
 </body>
 </html>
