@@ -10,12 +10,12 @@ def get_company_data():
     The sheet must have two columns: "Company name" and "Company Address".
     """
     sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"  # Your sheet ID
-    # Change "Sheet1" if your sheet name is different
-    sheet_name = "Sheet1"
+    sheet_name = "Sheet1"  # Change if your sheet name is different
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
     try:
         df = pd.read_csv(url, dtype=str).fillna("")
-        df.columns = df.columns.str.strip()  # Remove extra spaces
+        # Remove any extra spaces in column names
+        df.columns = df.columns.str.strip()
         return df
     except Exception as e:
         st.error(f"Error fetching company data: {e}")
@@ -23,13 +23,13 @@ def get_company_data():
 
 def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_date, sar_rate, bank_details, items):
     """
-    Render the invoice HTML template using Jinja2 and generate a PDF with WeasyPrint.
+    Render the invoice using a Jinja2 HTML template and generate a PDF using WeasyPrint.
     """
     try:
         with open("invoice_template.html", "r") as file:
             template_content = file.read()
     except FileNotFoundError:
-        st.error("Error: invoice_template.html not found. Please place it in the same directory.")
+        st.error("Error: invoice_template.html not found. Please ensure it exists in the same directory.")
         return None
 
     template = Template(template_content)
@@ -56,28 +56,22 @@ st.title("Invoice Generator")
 
 st.subheader("Select or Add Company from Google Sheets")
 company_data = get_company_data()
-
-company_info_default = ""
 if company_data is not None and "Company name" in company_data.columns and "Company Address" in company_data.columns:
-    # Prepare options: a default option and an "Add New Company" option.
     companies = company_data["Company name"].tolist()
-    options = ["-- Select a Company --"] + companies + ["Add New Company"]
-    selected_option = st.selectbox("Choose a company", options)
-    
-    if selected_option in companies:
-        # When selecting an existing company, get and format its address.
+    # Build the select options: existing companies plus an "Add New Company" option.
+    options = companies + ["Add New Company"]
+    selected_option = st.selectbox("Select a company", options)
+    if selected_option != "Add New Company":
+        # Get corresponding address from the fetched data.
         company_address = company_data[company_data["Company name"] == selected_option]["Company Address"].iloc[0]
         company_info_default = f"{selected_option}\n{company_address}"
-    elif selected_option == "Add New Company":
-        # Provide an empty field for manual entry.
-        company_info_default = ""
     else:
         company_info_default = ""
 else:
-    st.warning("Company data not found. You may enter company info manually.")
+    st.warning("Company data not found. You can enter company info manually.")
     company_info_default = ""
 
-# Show a text area to allow manual editing or adding new info.
+# Allow editing the company info.
 company_info = st.text_area("Company Info", company_info_default)
 
 customer_ref = st.text_area("Customer Reference", "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328")
