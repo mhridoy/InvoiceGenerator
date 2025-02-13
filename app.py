@@ -128,14 +128,14 @@ for i in range(num_items):
         # Default LME multiplier is 100% (1.0) if not enabled
         lme_multiplier = 1.0
         if lme_toggle:
-            # Let the user select a fractional percentage between 40.0 and 100.0
+            # Let the user select a fractional percentage between 40.00 and 100.00
             lme_percentage = st.slider(
                 "LME Percentage (40% - 100%)",
-                min_value=40.0, 
-                max_value=100.0, 
-                value=100.0, 
-                step=0.1,  # step of 0.1 allows fractional input like 40.1%, 79.5%, etc.
-                format="%.1f",  # display one decimal place
+                min_value=40.00, 
+                max_value=100.00, 
+                value=100.00, 
+                step=0.01,  # Allows fractional values with two decimal places
+                format="%.2f",  # Display two decimals after the point
                 key=f"lme_percentage_{i}"
             )
             lme_multiplier = lme_percentage / 100.0
