@@ -9,12 +9,14 @@ def get_company_data():
     Fetch company data from a public Google Sheet using the CSV export URL.
     The Google Sheet should have two columns: "Company name" and "Company Address".
     """
-    sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"  # Your sheet ID
-    sheet_name = "Sheet1"  # Adjust if your sheet name is different
+    # Replace with your actual sheet ID and sheet name
+    sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"
+    sheet_name = "Sheet1"  
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&sheet={sheet_name}"
     try:
         df = pd.read_csv(url, dtype=str).fillna("")
-        df.columns = df.columns.str.strip()  # Remove extra spaces from headers
+        # Remove extra spaces from headers
+        df.columns = df.columns.str.strip()
         return df
     except Exception as e:
         st.error(f"Error fetching company data: {e}")
@@ -39,7 +41,7 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
         company_info=company_info,
         customer_ref=customer_ref,
         invoice_number=invoice_number,
-        invoice_date=invoice_date.strftime("%Y-%m-%d"),  # Format date as a string
+        invoice_date=invoice_date.strftime("%Y-%m-%d"),
         sar_rate=sar_rate,
         bank_details=bank_details,
         items=items,
@@ -59,26 +61,35 @@ st.subheader("Select Company Info from Google Sheets")
 company_data = get_company_data()
 
 if company_data is not None:
-    # Display the DataFrame for verification purposes (optional)
-    st.dataframe(company_data)
-    
+    st.write("Fetched Company Data:")
+    st.dataframe(company_data)  # Debug: Display fetched data
+
+    # Check if the required columns exist in the DataFrame
     if "Company name" in company_data.columns and "Company Address" in company_data.columns:
-        # Create a list of company names from the fetched data
+        # Create a list of companies from the DataFrame
         companies = company_data["Company name"].tolist()
-        # Use a selectbox for selection instead of radio buttons
-        selected_company = st.selectbox("Select a Company", options=companies, key="company_selectbox")
-        
-        # Retrieve the corresponding company address
-        try:
-            company_address = company_data.loc[
-                company_data["Company name"] == selected_company, "Company Address"
-            ].iloc[0]
-        except IndexError:
-            company_address = ""
-        
-        # Combine company name and address into one string for the info box
-        company_info_default = f"{selected_company}\n{company_address}"
+        st.write("Companies List:", companies)  # Debug: Check companies list
+
+        # Check if the companies list is not empty
+        if companies:
+            # Use a selectbox for the user to select a company
+            selected_company = st.selectbox("Select a Company", options=companies, key="company_selectbox")
+            st.write("Selected Company:", selected_company)  # Debug: Display selected company
+
+            # Retrieve the corresponding company address
+            try:
+                company_address = company_data.loc[
+                    company_data["Company name"] == selected_company, "Company Address"
+                ].iloc[0]
+            except IndexError:
+                company_address = ""
+            # Combine the company name and address for display in the text area
+            company_info_default = f"{selected_company}\n{company_address}"
+        else:
+            st.error("No companies available in the list. Please check your Google Sheet data.")
+            company_info_default = "Enter company info manually."
     else:
+        st.error("The expected columns ('Company name' and 'Company Address') were not found in the data.")
         company_info_default = "Enter company info manually."
 else:
     company_info_default = "Enter company info manually."
