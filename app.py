@@ -7,14 +7,15 @@ from weasyprint import HTML
 def get_company_data():
     """
     Fetch company data from a public Google Sheet using the CSV export URL.
-    The Google Sheet should have two columns: "Company name" and "Company Address".
+    The sheet must have two columns: "Company name" and "Company Address".
     """
     sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"  # Your sheet ID
-    sheet_name = "Sheet1"  # Adjust if your sheet name is different
+    # Change "Sheet1" if your sheet name is different
+    sheet_name = "Sheet1"
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
     try:
         df = pd.read_csv(url, dtype=str).fillna("")
-        df.columns = df.columns.str.strip()  # Clean up any extra spaces in column headers
+        df.columns = df.columns.str.strip()  # Remove extra spaces
         return df
     except Exception as e:
         st.error(f"Error fetching company data: {e}")
@@ -22,13 +23,13 @@ def get_company_data():
 
 def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_date, sar_rate, bank_details, items):
     """
-    Render an invoice HTML template and generate a PDF using WeasyPrint.
+    Render the invoice HTML template using Jinja2 and generate a PDF with WeasyPrint.
     """
     try:
         with open("invoice_template.html", "r") as file:
             template_content = file.read()
     except FileNotFoundError:
-        st.error("Error: invoice_template.html not found. Please ensure it exists in the same directory.")
+        st.error("Error: invoice_template.html not found. Please place it in the same directory.")
         return None
 
     template = Template(template_content)
@@ -53,26 +54,30 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
 
 st.title("Invoice Generator")
 
-st.subheader("Select Company Info from Google Sheets")
+st.subheader("Select or Add Company from Google Sheets")
 company_data = get_company_data()
 
-if company_data is not None:
-    # (Optional) Show the fetched dataframe for debugging
-    st.write("Fetched company data:", company_data)
-
-    if "Company name" in company_data.columns and "Company Address" in company_data.columns:
-        companies = company_data["Company name"].tolist()
-        # Use streamlit radio buttons to select a company
-        selected_company = st.radio("Select a company", options=companies)
-        # Retrieve the corresponding company address
-        company_address = company_data[company_data["Company name"] == selected_company]["Company Address"].iloc[0]
-        company_info_default = f"{selected_company}\n{company_address}"
+company_info_default = ""
+if company_data is not None and "Company name" in company_data.columns and "Company Address" in company_data.columns:
+    # Prepare options: a default option and an "Add New Company" option.
+    companies = company_data["Company name"].tolist()
+    options = ["-- Select a Company --"] + companies + ["Add New Company"]
+    selected_option = st.selectbox("Choose a company", options)
+    
+    if selected_option in companies:
+        # When selecting an existing company, get and format its address.
+        company_address = company_data[company_data["Company name"] == selected_option]["Company Address"].iloc[0]
+        company_info_default = f"{selected_option}\n{company_address}"
+    elif selected_option == "Add New Company":
+        # Provide an empty field for manual entry.
+        company_info_default = ""
     else:
-        company_info_default = "Enter company info manually."
+        company_info_default = ""
 else:
-    company_info_default = "Enter company info manually."
+    st.warning("Company data not found. You may enter company info manually.")
+    company_info_default = ""
 
-# Allow editing the company info in case it needs adjustments
+# Show a text area to allow manual editing or adding new info.
 company_info = st.text_area("Company Info", company_info_default)
 
 customer_ref = st.text_area("Customer Reference", "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328")
