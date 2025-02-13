@@ -7,27 +7,28 @@ from weasyprint import HTML
 def get_company_data():
     """
     Fetch company data from a public Google Sheet using the CSV export URL.
+    The Google Sheet should have two columns: "Company name" and "Company Address".
     """
     sheet_id = "1tj__5HXGHKOgJBwtW8VhE0jeW4Us7h_OeO7rtNN4d64"  # Your sheet ID
-    sheet_name = "Sheet1"  # Change this if your sheet has a different name
+    sheet_name = "Sheet1"  # Adjust if your sheet name is different
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
     try:
         df = pd.read_csv(url, dtype=str).fillna("")
-        df.columns = df.columns.str.strip()  # Remove extra whitespace from column names
+        df.columns = df.columns.str.strip()  # Clean up any extra spaces in column headers
         return df
     except Exception as e:
-        st.error(f"Error fetching data: {e}")
+        st.error(f"Error fetching company data: {e}")
         return None
 
 def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_date, sar_rate, bank_details, items):
     """
-    Render the invoice using a Jinja2 HTML template and generate a PDF with WeasyPrint.
+    Render an invoice HTML template and generate a PDF using WeasyPrint.
     """
     try:
         with open("invoice_template.html", "r") as file:
             template_content = file.read()
     except FileNotFoundError:
-        st.error("Error: invoice_template.html not found. Please ensure it is in the same directory as app.py.")
+        st.error("Error: invoice_template.html not found. Please ensure it exists in the same directory.")
         return None
 
     template = Template(template_content)
@@ -54,16 +55,24 @@ st.title("Invoice Generator")
 
 st.subheader("Select Company Info from Google Sheets")
 company_data = get_company_data()
-if company_data is not None and "Company name" in company_data.columns and "Company Address" in company_data.columns:
-    # Create a list of company names from the sheet and let the user choose one.
-    company_names = company_data["Company name"].tolist()
-    selected_company = st.selectbox("Select a company", company_names)
-    # Retrieve the corresponding address.
-    company_address = company_data[company_data["Company name"] == selected_company]["Company Address"].iloc[0]
-    company_info_default = f"{selected_company}\n{company_address}"
+
+if company_data is not None:
+    # (Optional) Show the fetched dataframe for debugging
+    st.write("Fetched company data:", company_data)
+
+    if "Company name" in company_data.columns and "Company Address" in company_data.columns:
+        companies = company_data["Company name"].tolist()
+        # Use streamlit radio buttons to select a company
+        selected_company = st.radio("Select a company", options=companies)
+        # Retrieve the corresponding company address
+        company_address = company_data[company_data["Company name"] == selected_company]["Company Address"].iloc[0]
+        company_info_default = f"{selected_company}\n{company_address}"
+    else:
+        company_info_default = "Enter company info manually."
 else:
     company_info_default = "Enter company info manually."
 
+# Allow editing the company info in case it needs adjustments
 company_info = st.text_area("Company Info", company_info_default)
 
 customer_ref = st.text_area("Customer Reference", "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328")
