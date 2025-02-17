@@ -149,11 +149,9 @@ for i in range(num_items):
             "provision_lme_value": provision if lme_toggle else None
         })
 
-# Generate PDF
-if st.button("Generate Invoice"):
-    pdf_path = generate_invoice_pdf(
-        company_info, customer_ref, invoice_number, 
-        invoice_date, sar_rate, bank_details, items, invoice_currency
-    )
-    
-    with
+# --- Generate and Download PDF ---
+if st.button("Generate Invoice PDF"):
+    pdf_file_path = generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_date, sar_rate, bank_details, items)
+    if pdf_file_path and os.path.exists(pdf_file_path):
+        with open(pdf_file_path, "rb") as f:
+            st.download_button("Download Invoice", data=f.read(), file_name="invoice.pdf", mime="application/pdf")
