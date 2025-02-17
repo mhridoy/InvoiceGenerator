@@ -50,9 +50,6 @@
       font-weight: bold;
       background-color: #f2f2f2;
     }
-    td {
-      vertical-align: top;
-    }
     .total {
       font-weight: bold;
       background-color: #eee;
@@ -72,7 +69,7 @@
   <!-- Invoice Header -->
   <div class="invoice-header">Invoice No: {{ invoice_number }}</div>
 
-  <!-- Company Info and Customer Reference in side-by-side columns -->
+  <!-- Company Info and Customer Reference -->
   <div class="info-container">
     <div class="info-col">
       <p><strong>Company:</strong><br>{{ company_info | replace("\n", "<br>") | safe }}</p>
@@ -169,7 +166,7 @@
     {% endif %}
   </div>
 
-  <!-- Bank Details (line by line) -->
+  <!-- Bank Details -->
   <div class="bank-details">
     <p><strong>Bank Details:</strong><br>{{ bank_details | replace("\n", "<br>") | safe }}</p>
   </div>
