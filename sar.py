@@ -63,9 +63,9 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
 
     formatted_bank_details = format_bank_details(bank_details)
 
-    template_path = "invoice_template01.html"
+    template_path = "invoice_template.html"
     if not os.path.exists(template_path):
-        st.error("Missing invoice_template01.html. Ensure it is in the same folder as app.py.")
+        st.error("Missing invoice_template.html. Ensure it is in the same folder as app.py.")
         return None
 
     with open(template_path, "r", encoding="utf-8") as file:
