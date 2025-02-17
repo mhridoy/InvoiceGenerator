@@ -119,7 +119,8 @@ company_info = st.text_area("Company Info (line by line)", value=company_info_de
 customer_ref = st.text_area("Customer Reference (line by line)", "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328", key="customer_ref_text")
 invoice_number = st.text_input("Invoice Number", "30250124")
 invoice_date = st.date_input("Invoice Date", date.today())
-sar_rate = st.number_input("Dollar to SAR Rate", value=3.7475, step=0.0001)
+sar_rate_str = st.text_input("Dollar to SAR Rate", value="3.7475")
+sar_rate = float(sar_rate_str)
 bank_details = st.text_area("Bank Details (line by line)",
 """BANK DETAILS: TABIB AL ARABIA FOR ENVIRONMENTAL SERVICES CO.
 RIYAD BANK.
