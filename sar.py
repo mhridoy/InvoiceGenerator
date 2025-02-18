@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import pandas as pd
 from datetime import date
@@ -185,7 +186,6 @@ SWIFT CODE:RIBLSARI""",
 st.subheader("Items")
 items = []
 num_items = st.number_input("Number of Items", min_value=1, value=1, step=1, key="num_items")
-
 for i in range(num_items):
     with st.expander(f"Item {i+1}"):
         desc = st.text_input(f"Description {i+1}", "Cu Birch Cliff Scrap", key=f"desc_{i}")
