@@ -1,3 +1,4 @@
+<!-- invoice_template01.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,14 +83,14 @@ th {
 <!-- Date and Currency Info -->
 <div class="date-info">
     <p><strong>Date:</strong> {{ invoice_date }}</p>
-    {% if invoice_mode == "USD" %}
+    {% if invoice_currency == "USD" %}
     <p><strong>SAR Rate:</strong> {{ sar_rate }} ($1 equivalent)</p>
     {% else %}
     <p><strong>Invoice Currency:</strong> SAR</p>
     {% endif %}
 </div>
 
-<!-- Updated HTML Template (invoice_template.html) -->
+<!-- Invoice Items Table -->
 <table>
     <tr>
         <th>Description</th>
@@ -98,7 +99,7 @@ th {
         <th>LME %</th>
         {% endif %}
         <th>Quantity</th>
-        {% if invoice_mode == "USD" %}
+        {% if invoice_currency == "USD" %}
         <th>Rate (USD)</th>
         <th>Total (USD)</th>
         <th>Total (SAR)</th>
@@ -107,17 +108,27 @@ th {
         <th>Total (SAR)</th>
         {% endif %}
     </tr>
-    
     {% for item in items %}
     <tr>
         <td style="text-align: left;">{{ item.desc }}</td>
         {% if lme_used %}
-        <td>{{ "%.2f"|format(item.provision_lme_value) if item.lme_applied else 'N/A' }}</td>
-        <td>{{ "%.2f"|format(item.lme_percentage) ~ '%' if item.lme_applied else 'N/A' }}</td>
+        <td>
+            {% if item.lme_applied %}
+                {{ "%.2f"|format(item.provision_lme_value) }}
+            {% else %}
+                N/A
+            {% endif %}
+        </td>
+        <td>
+            {% if item.lme_applied %}
+                {{ "%.2f"|format(item.lme_percentage) }}%
+            {% else %}
+                N/A
+            {% endif %}
+        </td>
         {% endif %}
         <td>{{ "%.3f"|format(item.qty) }}</td>
-        
-        {% if invoice_mode == "USD" %}
+        {% if invoice_currency == "USD" %}
         <td>{{ "%.2f"|format(item.rate) }}</td>
         <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
         <td>{{ "%.2f"|format(item.qty * item.rate * sar_rate) }}</td>
@@ -127,33 +138,34 @@ th {
         {% endif %}
     </tr>
     {% endfor %}
-    
     <tr class="total">
-        {% if invoice_mode == "USD" %}
+        {% if invoice_currency == "USD" %}
             {% if lme_used %}
-                <td colspan="5">Grand Total</td>
+                <td colspan="5" style="text-align:right;">Grand Total</td>
                 <td>{{ "%.2f"|format(total_usd) }}</td>
                 <td>{{ "%.2f"|format(total_sar) }}</td>
             {% else %}
-                <td colspan="3">Grand Total</td>
+                <td colspan="3" style="text-align:right;">Grand Total</td>
                 <td>{{ "%.2f"|format(total_usd) }}</td>
                 <td>{{ "%.2f"|format(total_sar) }}</td>
             {% endif %}
         {% else %}
             {% if lme_used %}
-                <td colspan="5">Grand Total</td>
+                <td colspan="4" style="text-align:right;">Grand Total</td>
                 <td>{{ "%.2f"|format(total_sar) }}</td>
             {% else %}
-                <td colspan="3">Grand Total</td>
+                <td colspan="2" style="text-align:right;">Grand Total</td>
                 <td>{{ "%.2f"|format(total_sar) }}</td>
             {% endif %}
         {% endif %}
     </tr>
 </table>
+
 <!-- Amount in Words -->
 <div class="amount-words">
-    {% if invoice_mode == "USD" %}
+    {% if invoice_currency == "USD" %}
     <p><strong>Total USD Amount (in words):</strong> {{ total_usd_words }}</p>
+    <p><strong>Total SAR Amount (in numbers):</strong> {{ "%.2f"|format(total_sar) }}</p>
     {% else %}
     <p><strong>Total SAR Amount (in words):</strong> {{ total_sar_words }}</p>
     {% endif %}
