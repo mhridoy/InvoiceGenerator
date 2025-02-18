@@ -151,7 +151,7 @@
         {% endfor %}
         <tr class="total">
             <td colspan="{% if invoice_currency == 'USD' %}{% if lme_used %}6{% else %}4{% endif %}{% else %}{% if lme_used %}5{% else %}3{% endif %}" style="text-align:right;">Grand Total</td>
-            <td>{{ "%.2f"|format(total_usd if invoice_currency == 'USD' else total_sar) }}</td>
+            <td {% if invoice_currency == 'USD' %}colspan="1"{% else %}colspan="1"{% endif %}>{{ "%.2f"|format(total_usd if invoice_currency == 'USD' else total_sar) }}</td>
             {% if invoice_currency == 'USD' %}
                 <td>{{ "%.2f"|format(total_sar) }}</td>
             {% endif %}
