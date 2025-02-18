@@ -44,11 +44,11 @@ def get_company_data():
 def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_date, bank_details, items, invoice_currency, sar_rate=None):
     """
     Render the HTML invoice template and generate a PDF.
-    
+
     • For a USD invoice:
       – Compute total USD from the items and apply the given sar_rate.
       – Convert the total USD into words (using num2words with currency formatting).
-    
+
     • For a SAR invoice:
       – Compute the total SAR from the items.
       – Round the SAR amount to 2 decimals and then split the integer and fractional parts.
@@ -56,7 +56,7 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
     """
     # Determine if any item uses LME features
     lme_used = any(item.get("lme_applied", False) for item in items)
-    
+
     if invoice_currency == "USD":
         total_usd = sum(item['qty'] * item['rate'] for item in items)
         total_sar = total_usd * sar_rate if sar_rate else 0.0
@@ -100,15 +100,15 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
             "lme_used": lme_used,
             "invoice_currency": invoice_currency
         }
-    
+
     template_path = "invoice_template01.html"
     if not os.path.exists(template_path):
         st.error("Missing invoice_template01.html. Make sure it is in the same folder as app.py.")
         return None
-    
+
     with open(template_path, "r", encoding="utf-8") as file:
         template_content = file.read()
-    
+
     template = Template(template_content)
     rendered_html = template.render(**context)
     pdf_file_path = "invoice.pdf"
@@ -121,9 +121,9 @@ st.title("Invoice Generator")
 
 # --- Select Invoice Type ---
 invoice_currency = st.radio(
-    "Choose Invoice Type", 
-    ("USD", "SAR"), 
-    index=0, 
+    "Choose Invoice Type",
+    ("USD", "SAR"),
+    index=0,
     key="invoice_type"
 )
 
@@ -164,8 +164,8 @@ company_info = st.text_area("Company Info (line by line)", value=company_info_de
 
 # --- Other Invoice Inputs ---
 customer_ref = st.text_area(
-    "Customer Reference (line by line)", 
-    "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328", 
+    "Customer Reference (line by line)",
+    "AGFZE/CU/TAT/---/2025\nCNTR: 1ST\nCONTAINER NO: YMLU3386328",
     key="customer_ref_text"
 )
 invoice_number = st.text_input("Invoice Number", "30250124")
@@ -190,12 +190,12 @@ for i in range(num_items):
     with st.expander(f"Item {i+1}"):
         desc = st.text_input(f"Description {i+1}", "Cu Birch Cliff Scrap", key=f"desc_{i}")
         qty = st.number_input(f"Quantity {i+1}", value=19.332, step=0.001, key=f"qty_{i}")
-        
+
         # LME toggle: if enabled ask for LME details; otherwise, use a base rate.
         lme_toggle = st.checkbox("Enable LME for this item?", key=f"lme_toggle_{i}")
         if lme_toggle:
             provision_lme_value = st.number_input("Provision LME Value", value=0.00, step=0.01, key=f"provision_lme_value_{i}")
-            lme_percentage = st.slider("LME Percentage (40.00% - 100.00%)", 
+            lme_percentage = st.slider("LME Percentage (40.00% - 100.00%)",
                                        min_value=40.00, max_value=100.00, value=100.00, step=0.01, format="%.2f", key=f"lme_percentage_{i}")
             final_rate = provision_lme_value * (lme_percentage / 100.0)
         else:
@@ -205,7 +205,7 @@ for i in range(num_items):
                 final_rate = st.number_input(f"Base Rate (USD) {i+1}", value=8380.00, step=0.01, key=f"base_rate_{i}")
             else:
                 final_rate = st.number_input(f"Base Rate (SAR) {i+1}", value=8380.00, step=0.01, key=f"base_rate_{i}")
-        
+
         items.append({
             "desc": desc,
             "qty": qty,
