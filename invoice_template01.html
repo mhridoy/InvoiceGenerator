@@ -63,6 +63,10 @@
       border: 1px solid #000;
       padding: 10px;
     }
+    /* Add a pointer cursor to indicate that the SAR header is clickable */
+    #sarAmountHeader {
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -83,9 +87,9 @@
   <div class="date-info">
     <p><strong>Date:</strong> {{ invoice_date }}</p>
     {% if invoice_mode == "USD" %}
-      <p><strong>SAR Rate:</strong> {{ sar_rate }} ($1 equivalent)</p>
+    <p><strong>SAR Rate:</strong> {{ sar_rate }} ($1 equivalent)</p>
     {% else %}
-      <p><strong>Invoice Currency:</strong> SAR</p>
+    <p><strong>Invoice Currency:</strong> SAR</p>
     {% endif %}
   </div>
 
@@ -94,67 +98,68 @@
     <tr>
       <th>Description</th>
       {% if lme_used %}
-        <th>Provision LME</th>
-        <th>LME %</th>
+      <th>Provision LME</th>
+      <th>LME %</th>
       {% endif %}
       <th>Quantity</th>
       {% if invoice_mode == "USD" %}
-        <th>Rate (USD)</th>
-        <th>Total (USD)</th>
-        <th>Total (SAR)</th>
+      <th>Rate (USD)</th>
+      <th>Total (USD)</th>
+      <th id="sarAmountHeader">Total (SAR)</th>
       {% else %}
-        <th>Rate (SAR)</th>
-        <th>Total (SAR)</th>
+      <th>Rate (SAR)</th>
+      <th id="sarAmountHeader">Total (SAR)</th>
       {% endif %}
     </tr>
     {% for item in items %}
     <tr>
       <td style="text-align: left;">{{ item.desc }}</td>
       {% if lme_used %}
-        <td>
-          {% if item.lme_applied %}
-            {{ "%.2f"|format(item.provision_lme_value) }}
-          {% else %}
-            N/A
-          {% endif %}
-        </td>
-        <td>
-          {% if item.lme_applied %}
-            {{ "%.2f"|format(item.lme_percentage) }}%
-          {% else %}
-            N/A
-          {% endif %}
-        </td>
+      <td>
+        {% if item.lme_applied %}
+        {{ "%.2f"|format(item.provision_lme_value) }}
+        {% else %}
+        N/A
+        {% endif %}
+      </td>
+      <td>
+        {% if item.lme_applied %}
+        {{ "%.2f"|format(item.lme_percentage) }}%
+        {% else %}
+        N/A
+        {% endif %}
+      </td>
       {% endif %}
       <td>{{ "%.3f"|format(item.qty) }}</td>
       {% if invoice_mode == "USD" %}
-        <td>{{ "%.2f"|format(item.rate) }}</td>
-        <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
-        <td>{{ "%.2f"|format(item.qty * item.rate * sar_rate) }}</td>
+      <td>{{ "%.2f"|format(item.rate) }}</td>
+      <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
+      <td>{{ "%.2f"|format(item.qty * item.rate * sar_rate) }}</td>
       {% else %}
-        <td>{{ "%.2f"|format(item.rate) }}</td>
-        <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
+      <td>{{ "%.2f"|format(item.rate) }}</td>
+      <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
       {% endif %}
     </tr>
     {% endfor %}
-    <tr class="total">
+    <!-- Grand Total Row (initially hidden) -->
+    <tr class="total" id="grandTotalRow" style="display: none;">
       {% if invoice_mode == "USD" %}
         {% if lme_used %}
-          <td colspan="5" style="text-align:right;">Grand Total</td>
-          <td>{{ "%.2f"|format(total_usd) }}</td>
-          <td>{{ "%.2f"|format(total_sar) }}</td>
+        <td colspan="5" style="text-align:right;">Grand Total</td>
+        <td>{{ "%.2f"|format(total_usd) }}</td>
+        <td>{{ "%.2f"|format(total_sar) }}</td>
         {% else %}
-          <td colspan="3" style="text-align:right;">Grand Total</td>
-          <td>{{ "%.2f"|format(total_usd) }}</td>
-          <td>{{ "%.2f"|format(total_sar) }}</td>
+        <td colspan="3" style="text-align:right;">Grand Total</td>
+        <td>{{ "%.2f"|format(total_usd) }}</td>
+        <td>{{ "%.2f"|format(total_sar) }}</td>
         {% endif %}
       {% else %}
         {% if lme_used %}
-          <td colspan="4" style="text-align:right;">Grand Total</td>
-          <td>{{ "%.2f"|format(total_sar) }}</td>
+        <td colspan="4" style="text-align:right;">Grand Total</td>
+        <td>{{ "%.2f"|format(total_sar) }}</td>
         {% else %}
-          <td colspan="2" style="text-align:right;">Grand Total</td>
-          <td>{{ "%.2f"|format(total_sar) }}</td>
+        <td colspan="2" style="text-align:right;">Grand Total</td>
+        <td>{{ "%.2f"|format(total_sar) }}</td>
         {% endif %}
       {% endif %}
     </tr>
@@ -163,9 +168,9 @@
   <!-- Amount in Words -->
   <div class="amount-words">
     {% if invoice_mode == "USD" %}
-      <p><strong>Total USD Amount (in words):</strong> {{ total_usd_words }}</p>
+    <p><strong>Total USD Amount (in words):</strong> {{ total_usd_words }}</p>
     {% else %}
-      <p><strong>Total SAR Amount (in words):</strong> {{ total_sar_words }}</p>
+    <p><strong>Total SAR Amount (in words):</strong> {{ total_sar_words }}</p>
     {% endif %}
   </div>
 
@@ -173,5 +178,22 @@
   <div class="bank-details">
     <p><strong>Bank Details:</strong><br>{{ bank_details | replace("\n", "<br>") | safe }}</p>
   </div>
+
+  <!-- JavaScript for toggling the Grand Total row -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var sarHeader = document.getElementById("sarAmountHeader");
+      var grandTotalRow = document.getElementById("grandTotalRow");
+      
+      // Toggle the display of the Grand Total row when the SAR header is clicked
+      sarHeader.addEventListener("click", function() {
+        if (grandTotalRow.style.display === "none") {
+          grandTotalRow.style.display = "table-row";
+        } else {
+          grandTotalRow.style.display = "none";
+        }
+      });
+    });
+  </script>
 </body>
 </html>
