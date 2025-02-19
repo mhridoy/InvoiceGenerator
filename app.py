@@ -174,11 +174,11 @@ invoice_date = st.date_input("Invoice Date", date.today(), key="invoice_date")
 # --- Bank Details Section with Conditional Defaults ---
 if invoice_currency == "SAR":
     default_bank_details = (
-        "[2/18/25, 3:39:44 PM] Sales Taes: TABIB AL ARABIA TRADING CO.\n"
+        "TABIB AL ARABIA TRADING CO.\n"
         "RIYAD BANK\n"
         "A/C NO:3274336199940\n"
         "IBAN NO:SA1720000003274336199940\n"
-        "[2/18/25, 3:40:05 PM] Sales Taes: BIN KHALDOON ST. BRANCH\n"
+        "BIN KHALDOON ST. BRANCH\n"
         "SWIFT CODE : RIBLSARI"
     )
 else:
