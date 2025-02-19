@@ -94,6 +94,7 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
             "invoice_number": invoice_number,
             "invoice_date": invoice_date.strftime("%Y-%m-%d"),
             "bank_details": format_bank_details(bank_details),
+            "sar_rate": sar_rate,
             "items": items,
             "total_sar": total_sar,
             "total_sar_words": total_sar_words,
@@ -135,7 +136,12 @@ if invoice_currency == "USD":
         st.error("Invalid SAR rate. Please enter a valid number.")
         sar_rate = 1.0
 else:
-    sar_rate = None  # Not needed for SAR invoice
+    sar_rate_str = st.text_input("Dollar to SAR Rate", value="3.7475", key="sar_rate")
+    try:
+        sar_rate = float(sar_rate_str)
+    except ValueError:
+        st.error("Invalid SAR rate. Please enter a valid number.")
+        sar_rate = 1.0
 
 # --- Company Data Section ---
 st.subheader("Select Company Info from Google Sheets")
