@@ -46,13 +46,13 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
     Render the HTML invoice template and generate a PDF.
 
     • For a USD invoice:
-      – Compute total USD from the items and apply the given sar_rate.
+      – Compute the total in USD from the items and apply the given sar_rate.
       – Convert the total USD into words (using num2words with currency formatting).
 
     • For a SAR invoice:
-      – Compute the total SAR from the items.
-      – Round the SAR amount to 2 decimals and then split the integer and fractional parts.
-      – Convert the integer part to words normally, and then convert each digit of the decimal part.
+      – Compute the total in SAR from the items.
+      – Round the SAR amount to 2 decimals, split the integer and fractional parts,
+         and convert them to words.
     """
     # Determine if any item uses LME features
     lme_used = any(item.get("lme_applied", False) for item in items)
@@ -171,16 +171,27 @@ customer_ref = st.text_area(
 invoice_number = st.text_input("Invoice Number", "30250124")
 invoice_date = st.date_input("Invoice Date", date.today(), key="invoice_date")
 
-bank_details = st.text_area(
-    "Bank Details (line by line)",
-    """BANK DETAILS: TABIB AL ARABIA FOR ENVIRONMENTAL SERVICES CO.
-RIYAD BANK.
-DOLLAR ACCOUNT A/C NO:3274336190440
-IBAN NO:SA4920000003274336190440
-BIN KHALDOON ST. BRANCH
-SWIFT CODE:RIBLSARI""",
-    key="bank_details_text"
-)
+# --- Bank Details Section with Conditional Defaults ---
+if invoice_currency == "SAR":
+    default_bank_details = (
+        "[2/18/25, 3:39:44 PM] Sales Taes: TABIB AL ARABIA TRADING CO.\n"
+        "RIYAD BANK\n"
+        "A/C NO:3274336199940\n"
+        "IBAN NO:SA1720000003274336199940\n"
+        "[2/18/25, 3:40:05 PM] Sales Taes: BIN KHALDOON ST. BRANCH\n"
+        "SWIFT CODE : RIBLSARI"
+    )
+else:
+    default_bank_details = (
+        "BANK DETAILS: TABIB AL ARABIA FOR ENVIRONMENTAL SERVICES CO.\n"
+        "RIYAD BANK.\n"
+        "DOLLAR ACCOUNT A/C NO:3274336190440\n"
+        "IBAN NO:SA4920000003274336190440\n"
+        "BIN KHALDOON ST. BRANCH\n"
+        "SWIFT CODE:RIBLSARI"
+    )
+
+bank_details = st.text_area("Bank Details (line by line)", value=default_bank_details, key="bank_details_text")
 
 # --- Invoice Items Section ---
 st.subheader("Items")
