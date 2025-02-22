@@ -158,7 +158,7 @@
                     <td colspan="3" style="text-align:right;">Grand Total </td>
                 {% endif %}
                 <td>$ {{ "%.2f"|format(total_usd) }}</td>
-                <td>SR {{ "%.2f"|format(total_sar) }}</td>
+                <td>SAR {{ "%.2f"|format(total_sar) }}</td>
             </tr>
         {% else %}
             <tr class="total">
@@ -167,7 +167,7 @@
                 {% else %}
                     <td colspan="3" style="text-align:right;">Grand Total (SAR)</td>
                 {% endif %}
-                <td>SR {{ "%.2f"|format(total_sar) }}</td>
+                <td>SAR {{ "%.2f"|format(total_sar) }}</td>
             </tr>
         {% endif %}
     </table>
@@ -176,7 +176,7 @@
     <div class="amount-words">
         {% if invoice_currency == "USD" %}
             <p><strong>Total USD Amount (in words):</strong> {{ total_usd_words }}</p>
-            <p><strong>Total SAR Amount (in numbers):</strong> SR {{ "%.2f"|format(total_sar) }}</p>
+            <p><strong>Total SAR Amount (in numbers):</strong> SAR {{ "%.2f"|format(total_sar) }}</p>
         {% else %}
             <p><strong>Total SAR Amount (in words):</strong> {{ total_sar_words }} riyal</p>
         {% endif %}
