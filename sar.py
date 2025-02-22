@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import pandas as pd
 from datetime import date
@@ -101,9 +102,9 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
             "invoice_currency": invoice_currency
         }
 
-    template_path = "test.html"
+    template_path = "invoice_template01.html"
     if not os.path.exists(template_path):
-        st.error("Missing test.html. Make sure it is in the same folder as app.py.")
+        st.error("Missing invoice_template01.html. Make sure it is in the same folder as app.py.")
         return None
 
     with open(template_path, "r", encoding="utf-8") as file:
@@ -117,64 +118,50 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
 
 # --------------------- Streamlit Application --------------------- #
 
-st.markdown("""
-    <style>
-        .reportview-container .main .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            font-family: 'Arial', sans-serif;
-        }
-        .stSelectbox {
-            font-size: 16px;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-
-st.title("🌟 Invoice Generator 🌟")
+st.title("Invoice Generator")
 
 # --- Select Invoice Type ---
 invoice_currency = st.radio(
     "Choose Invoice Type",
-    ("💵 USD", "💷 SAR"),
-    horizontal=True,
+    ("USD", "SAR"),
     index=0,
     key="invoice_type"
 )
 
-sar_rate = None
-if invoice_currency == "💵 USD":
+if invoice_currency == "USD":
     sar_rate_str = st.text_input("Dollar to SAR Rate", value="3.7475", key="sar_rate")
     try:
         sar_rate = float(sar_rate_str)
     except ValueError:
-        st.error("🔍 Invalid SAR rate. Please enter a valid number.")
+        st.error("Invalid SAR rate. Please enter a valid number.")
         sar_rate = 1.0
 else:
-    st.info("Note: SAR rate not required for SAR invoices.")
+    sar_rate_str = st.text_input("Dollar to SAR Rate", value="3.7475", key="sar_rate")
+    try:
+        sar_rate = float(sar_rate_str)
+    except ValueError:
+        st.error("Invalid SAR rate. Please enter a valid number.")
+        sar_rate = 1.0
 
 # --- Company Data Section ---
-st.subheader("📊 Select Company Info from Google Sheets")
+st.subheader("Select Company Info from Google Sheets")
 company_data = get_company_data()
 if company_data is not None:
-    st.dataframe(company_data.style.set_properties(**{'background-color': '#f4f4f4', 'border-color': 'white'}), height=300)
+    st.dataframe(company_data)
     if "Company Name" in company_data.columns and "Company Address" in company_data.columns:
         companies = company_data["Company Name"].tolist()
         if companies:
             selected_company = st.selectbox("Select a Company", options=companies, key="company_selectbox")
             try:
                 company_address = company_data.loc[company_data["Company Name"] == selected_company, "Company Address"].iloc[0]
-                company_info_default = f"{selected_company}\n{company_address}"
             except IndexError:
-                company_info_default = "Enter company info manually."
+                company_address = ""
+            company_info_default = f"{selected_company}\n{company_address}"
         else:
-            st.error("⚠️ No companies available. Check your Google Sheet data.")
+            st.error("No companies available. Check your Google Sheet data.")
             company_info_default = "Enter company info manually."
     else:
-        st.error("⚠️ Required columns ('Company Name' and 'Company Address') not found.")
+        st.error("Required columns ('Company Name' and 'Company Address') not found.")
         company_info_default = "Enter company info manually."
 else:
     company_info_default = "Enter company info manually."
@@ -191,7 +178,7 @@ invoice_number = st.text_input("Invoice Number", "30250124")
 invoice_date = st.date_input("Invoice Date", date.today(), key="invoice_date")
 
 # --- Bank Details Section with Conditional Defaults ---
-if invoice_currency == "💷 SAR":
+if invoice_currency == "SAR":
     default_bank_details = (
         "TABIB AL ARABIA TRADING CO.\n"
         "RIYAD BANK\n"
@@ -213,15 +200,15 @@ else:
 bank_details = st.text_area("Bank Details (line by line)", value=default_bank_details, key="bank_details_text")
 
 # --- Invoice Items Section ---
-st.subheader("📦 Items")
+st.subheader("Items")
 items = []
 num_items = st.number_input("Number of Items", min_value=1, value=1, step=1, key="num_items")
 for i in range(num_items):
-    with st.expander(f"Item {i+1}", expanded=True):
+    with st.expander(f"Item {i+1}"):
         desc = st.text_input(f"Description {i+1}", "Cu Birch Cliff Scrap", key=f"desc_{i}")
         qty = st.number_input(f"Quantity {i+1}", value=19.332, step=0.001, key=f"qty_{i}")
 
-        # LME toggle
+        # LME toggle: if enabled ask for LME details; otherwise, use a base rate.
         lme_toggle = st.checkbox("Enable LME for this item?", key=f"lme_toggle_{i}")
         if lme_toggle:
             provision_lme_value = st.number_input("Provision LME Value", value=0.00, step=0.01, key=f"provision_lme_value_{i}")
@@ -231,7 +218,7 @@ for i in range(num_items):
         else:
             provision_lme_value = None
             lme_percentage = None
-            if invoice_currency == "💵 USD":
+            if invoice_currency == "USD":
                 final_rate = st.number_input(f"Base Rate (USD) {i+1}", value=8380.00, step=0.01, key=f"base_rate_{i}")
             else:
                 final_rate = st.number_input(f"Base Rate (SAR) {i+1}", value=8380.00, step=0.01, key=f"base_rate_{i}")
@@ -246,8 +233,8 @@ for i in range(num_items):
         })
 
 # --- Generate and Download PDF ---
-if st.button("🚀 Generate Invoice PDF"):
+if st.button("Generate Invoice PDF"):
     pdf_file_path = generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_date, bank_details, items, invoice_currency, sar_rate)
     if pdf_file_path and os.path.exists(pdf_file_path):
         with open(pdf_file_path, "rb") as f:
-            st.download_button("📥 Download Invoice", data=f.read(), file_name="invoice.pdf", mime="application/pdf")
+            st.download_button("Download Invoice", data=f.read(), file_name="invoice.pdf", mime="application/pdf")
