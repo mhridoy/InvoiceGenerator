@@ -144,8 +144,8 @@
                     <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
                     <td>{{ "%.2f"|format(item.qty * item.rate * sar_rate) }}</td>
                 {% else %}
-                    <td>{{ "%.2f"|format(item.rate) }}</td>
-                    <td>{{ "%.2f"|format(item.qty * item.rate) }}</td>
+                    <td>SR {{ "%.2f"|format(item.rate) }}</td>
+                    <td>SR {{ "%.2f"|format(item.qty * item.rate) }}</td>
                 {% endif %}
             </tr>
         {% endfor %}
@@ -178,7 +178,7 @@
             <p><strong>Total USD Amount (in words):</strong> {{ total_usd_words }}</p>
             <p><strong>Total SAR Amount (in numbers):</strong> SR {{ "%.2f"|format(total_sar) }}</p>
         {% else %}
-            <p><strong>Total SAR Amount (in words):</strong> {{ total_sar_words }} riyal</p>
+            <p><strong>Total SAR Amount (in words):</strong> {{ total_sar_words }} Saudi Riyal</p>
         {% endif %}
     </div>
 
