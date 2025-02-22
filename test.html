@@ -43,6 +43,12 @@
             margin-bottom: 20px;
         }
 
+        .grand-total-top {
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -91,13 +97,14 @@
         </div>
     </div>
 
-    <!-- Date and Currency Info -->
+    <!-- Date, Currency Info, and Grand Total (Top for SAR) -->
     <div class="date-info">
         <p><strong>Date:</strong> {{ invoice_date }}</p>
         {% if invoice_currency == "USD" %}
             <p><strong>SAR Rate:</strong> {{ sar_rate }} ($1 equivalent)</p>
         {% else %}
             <p><strong>SAR Rate:</strong> {{ sar_rate }} ($1 equivalent)</p>
+            <p class="grand-total-top"><strong>Grand Total (SAR):</strong> SR {{ "%.2f"|format(total_sar) }}</p>
         {% endif %}
     </div>
 
@@ -149,7 +156,7 @@
                 {% endif %}
             </tr>
         {% endfor %}
-        <!-- Grand Total Row -->
+        <!-- Grand Total Row (Bottom) -->
         {% if invoice_currency == "USD" %}
             <tr class="total">
                 {% if lme_used %}
@@ -178,7 +185,7 @@
             <p><strong>Total USD Amount (in words):</strong> {{ total_usd_words }}</p>
             <p><strong>Total SAR Amount (in numbers):</strong> SR {{ "%.2f"|format(total_sar) }}</p>
         {% else %}
-            <p><strong>Total SAR Amount (in words):</strong> {{ total_sar_words }} Saudi Riyal</p>
+            <p><strong>Total SAR Amount (in words):</strong> {{ total_sar_words }}</p>
         {% endif %}
     </div>
 
