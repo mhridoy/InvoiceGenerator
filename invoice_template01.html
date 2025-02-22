@@ -149,32 +149,34 @@
                 {% endif %}
             </tr>
         {% endfor %}
-<tr class="total">
-    {% if invoice_currency == "USD" %}
-        {% if lme_used %}
-            <td colspan="6" style="text-align:right;">Grand Total</td>
-            <td>{{ "%.2f"|format(total_usd) }}</td>
+        <!-- Grand Total Row -->
+        {% if invoice_currency == "USD" %}
+            <tr class="total">
+                {% if lme_used %}
+                    <td colspan="5" style="text-align:right;">Grand Total (USD)</td>
+                {% else %}
+                    <td colspan="3" style="text-align:right;">Grand Total (USD)</td>
+                {% endif %}
+                <td>$ {{ "%.2f"|format(total_usd) }}</td>
+                <td>SR {{ "%.2f"|format(total_sar) }}</td>
+            </tr>
         {% else %}
-            <td colspan="4" style="text-align:right;">Grand Total</td>
-            <td>{{ "%.2f"|format(total_usd) }}</td>
+            <tr class="total">
+                {% if lme_used %}
+                    <td colspan="4" style="text-align:right;">Grand Total (SAR)</td>
+                {% else %}
+                    <td colspan="3" style="text-align:right;">Grand Total (SAR)</td>
+                {% endif %}
+                <td>SR {{ "%.2f"|format(total_sar) }}</td>
+            </tr>
         {% endif %}
-    {% else %}
-        {% if lme_used %}
-            <td colspan="4" style="text-align:right;">Grand Total</td>
-            <td>{{ "%.2f"|format(total_sar) }}</td>
-        {% else %}
-            <td colspan="3" style="text-align:right;">Grand Total</td>
-            <td>{{ "%.2f"|format(total_sar) }}</td>
-        {% endif %}
-    {% endif %}
-</tr>
     </table>
 
     <!-- Amount in Words -->
     <div class="amount-words">
         {% if invoice_currency == "USD" %}
             <p><strong>Total USD Amount (in words):</strong> {{ total_usd_words }}</p>
-            <p><strong>Total SAR Amount (in numbers):</strong> {{ "%.2f"|format(total_sar) }}</p>
+            <p><strong>Total SAR Amount (in numbers):</strong> SR {{ "%.2f"|format(total_sar) }}</p>
         {% else %}
             <p><strong>Total SAR Amount (in words):</strong> {{ total_sar_words }} riyal</p>
         {% endif %}
