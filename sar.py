@@ -102,9 +102,9 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
             "invoice_currency": invoice_currency
         }
 
-    template_path = "invoice_template01.html"
+    template_path = "test.html"
     if not os.path.exists(template_path):
-        st.error("Missing invoice_template01.html. Make sure it is in the same folder as app.py.")
+        st.error("Missing test.html. Make sure it is in the same folder as app.py.")
         return None
 
     with open(template_path, "r", encoding="utf-8") as file:
