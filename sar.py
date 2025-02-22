@@ -78,16 +78,15 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
             "lme_used": lme_used,
             "invoice_currency": invoice_currency
         }
-    else:
-        # For SAR invoice: no conversion rate is used.
+    else:  # SAR invoice
         total_sar = sum(item['qty'] * item['rate'] for item in items)
         total_sar_rounded = round(total_sar, 2)
         total_sar_str = "{:.2f}".format(total_sar_rounded)
         integer_part, decimal_part = total_sar_str.split(".")
-        integer_words = num2words(int(integer_part), lang='en')
-        # Convert each digit in the decimal part individually to words
-        decimal_words = " ".join(num2words(int(d), lang='en') for d in decimal_part)
-        total_sar_words = (integer_words + " point " + decimal_words).capitalize()
+        integer_words = num2words(int(integer_part), lang='en').capitalize()
+        # Convert decimal part to words, ensuring "10" becomes "ten" instead of "one zero"
+        decimal_words = num2words(int(decimal_part), lang='en').lower()
+        total_sar_words = f"{integer_words} point {decimal_words} Saudi Riyal"
         context = {
             "company_info": company_info,
             "customer_ref": customer_ref,
@@ -104,7 +103,7 @@ def generate_invoice_pdf(company_info, customer_ref, invoice_number, invoice_dat
 
     template_path = "test.html"
     if not os.path.exists(template_path):
-        st.error("Missing test.html. Make sure it is in the same folder as app.py.")
+        st.error("Missing invoice_template01.html. Make sure it is in the same folder as app.py.")
         return None
 
     with open(template_path, "r", encoding="utf-8") as file:
